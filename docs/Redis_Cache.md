@@ -3,6 +3,14 @@
 ## What is Caching?
 Caching is the technique of storing frequently requested data in fast, temporary storage (usually memory/RAM, e.g. Redis), so it can be returned quickly without going to the database every time.
 
+## Steps to implement Redis
+- Install redis and set redis url.
+- create redis client.
+- make connection and connect redis with app.
+- set cache key.
+- Check the cache before querying the database.
+- Fetch from the database on a cache miss. 
+
 ## Example: Netflix Plans
 - Netflix shows its subscription plans through an API call.
 - The plans are the same for every user and rarely change.
