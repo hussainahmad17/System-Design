@@ -26,11 +26,13 @@ const GROUPS = [
     ],
   },
   {
-    title: "Leather and care",
+    title: "Products and care",
     items: [
-      ["Is your leather real?", "Yes. Every jacket is full-grain cowhide or lambskin. We never use bonded or synthetic leather."],
-      ["How do I care for my jacket?", "Condition it twice a year and keep it away from heat. Our leather care guide has the full steps."],
-      ["Do you repair jackets?", "Yes, for free, for as long as you own the jacket. Contact us to arrange a repair."],
+      ["Is your leather real?", "Yes. Every jacket and leather shoe is full-grain cowhide or lambskin. We never use bonded or synthetic leather."],
+      ["How do I care for leather?", "Condition it twice a year and keep it away from heat. Our leather care guide has the full steps."],
+      ["Do you repair leather pieces?", "Yes, for free, for as long as you own the jacket or shoes. Contact us to arrange a repair."],
+      ["Do watches come with a warranty?", "Every watch has a 2-year warranty on the movement. Straps and batteries aren't covered."],
+      ["Do your sunglasses block UV light?", "Yes. All lenses are rated UV400, which blocks 100% of UVA and UVB light."],
     ],
   },
 ] as const;

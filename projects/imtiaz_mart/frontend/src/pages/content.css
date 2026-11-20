@@ -65,7 +65,6 @@
 .track { display: grid; gap: 48px; }
 .track form { max-width: 440px; }
 @media (min-width: 900px) { .track { grid-template-columns: 440px 1fr; gap: 80px; } }
-.field-error { color: var(--error); font-size: var(--fs-sm); }
 .track__result h2 { font-size: var(--fs-xl); margin-bottom: 4px; }
 
 .timeline { list-style: none; margin: 28px 0 0; padding: 0; }
@@ -98,3 +97,14 @@
 .timeline li.is-done::before { border-color: var(--oxblood); background: var(--oxblood); }
 .timeline li.is-done::after { border-left-color: var(--cognac); }
 .timeline li[aria-current="step"] .timeline__label { font-weight: 500; }
+
+/* ---------- Account ---------- */
+.account { display: grid; gap: 48px; }
+@media (min-width: 900px) { .account { grid-template-columns: 1fr 1fr; } }
+.account__details { margin: 0; display: grid; gap: 16px; }
+.account__details div { padding-bottom: 12px; border-bottom: 1px solid var(--suede); }
+.account__details dt { font-size: var(--fs-sm); color: var(--muted); }
+.account__details dd { margin: 2px 0 0; font-size: var(--fs-md); }
+.account__orders h2 { font-size: var(--fs-xl); }
+.account__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+.account__all { border: 0; background: none; padding: 0; cursor: pointer; }

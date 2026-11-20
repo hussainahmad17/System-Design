@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { FREE_SHIPPING_FROM, useCart } from "../cart/CartContext";
+import { FREE_SHIPPING_FROM_CENTS, useCart } from "../cart/CartContext";
 import Img from "../components/Img";
 import { formatPrice } from "../data/catalog";
 import "./cart.css";
@@ -13,14 +13,14 @@ export default function Cart() {
         <h1>Your cart is empty</h1>
         <p className="lede">Find a jacket you'll wear for the next twenty years.</p>
         <div className="empty__ctas">
-          <Link to="/collections/men" className="btn btn--primary">Shop men</Link>
-          <Link to="/collections/women" className="btn btn--outline">Shop women</Link>
+          <Link to="/collections/best-sellers" className="btn btn--primary">Shop best sellers</Link>
+          <Link to="/collections/leather-jackets" className="btn btn--outline">Shop leather jackets</Link>
         </div>
       </section>
     );
   }
 
-  const toFree = FREE_SHIPPING_FROM - subtotal;
+  const toFree = FREE_SHIPPING_FROM_CENTS - subtotal;
 
   return (
     <section className="container section">
@@ -29,12 +29,12 @@ export default function Cart() {
         <ul className="cart__lines">
           {lines.map((l) => (
             <li key={l.key} className="line">
-              <Img id={l.product.image} alt={l.product.name} ratio={1.25} sizes="120px" className="line__img" />
+              <Img id={l.image} alt={l.name} ratio={1.25} sizes="120px" className="line__img" />
               <div className="line__info">
-                <h2 className="line__name">{l.product.name}</h2>
-                <p className="muted">{l.product.colour}, size {l.size}</p>
+                <h2 className="line__name">{l.name}</h2>
+                <p className="muted">{l.colour}{l.size === "One size" ? "" : `, size ${l.size}`}</p>
                 <div className="line__controls">
-                  <div className="qty" role="group" aria-label={`Quantity for ${l.product.name}`}>
+                  <div className="qty" role="group" aria-label={`Quantity for ${l.name}`}>
                     <button onClick={() => setQty(l.key, l.qty - 1)} disabled={l.qty <= 1} aria-label="Decrease quantity">−</button>
                     <span aria-live="polite">{l.qty}</span>
                     <button onClick={() => setQty(l.key, l.qty + 1)} disabled={l.qty >= 10} aria-label="Increase quantity">+</button>

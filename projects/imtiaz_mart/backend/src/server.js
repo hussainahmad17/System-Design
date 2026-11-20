@@ -2,6 +2,7 @@ import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { connectMongo, disconnectMongo } from "./db/mongo.js";
 import { warmUpIdentityIndex } from "./modules/auth/identityIndex.js";
+import { Product } from "./modules/products/product.model.js";
 import { User } from "./modules/users/user.model.js";
 
 // Startup order matters:
@@ -11,7 +12,7 @@ import { User } from "./modules/users/user.model.js";
 // 4. only then accept traffic
 async function start() {
   await connectMongo();
-  await User.createIndexes();
+  await Promise.all([User.createIndexes(), Product.createIndexes()]);
   await warmUpIdentityIndex();
 
   const server = createApp().listen(env.PORT, () => {

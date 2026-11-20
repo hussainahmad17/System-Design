@@ -1,38 +1,48 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
-import { productById, type Product, type Size } from "../data/catalog";
+import type { Product } from "../data/catalog";
 
 // UI-only cart: lives in the browser until the backend cart API exists.
+// Each line keeps a snapshot of the product (name, price, image) taken when it was added,
+// because products now come from the API page by page; there is no full catalog in memory.
+// The server must re-check prices at checkout: a snapshot can be stale or edited by the user.
 
 export interface CartLine {
   productId: string;
-  size: Size;
+  handle: string;
+  name: string;
+  colour: string;
+  image: string;
+  priceCents: number;
+  size: string;
   qty: number;
 }
 export interface CartLineView extends CartLine {
   key: string;
-  product: Product;
   lineTotal: number;
 }
 
 type Action =
-  | { type: "add"; productId: string; size: Size }
+  | { type: "add"; product: Product; size: string }
   | { type: "setQty"; key: string; qty: number }
   | { type: "remove"; key: string }
   | { type: "clear" };
 
 const MAX_QTY = 10;
-const STORAGE_KEY = "im_cart_v1";
+const STORAGE_KEY = "im_cart_v2"; // v2: snapshot lines (v1 stored only ids from the old static catalog)
 const lineKey = (l: Pick<CartLine, "productId" | "size">) => `${l.productId}:${l.size}`;
 
 function reducer(lines: CartLine[], action: Action): CartLine[] {
   switch (action.type) {
     case "add": {
-      const key = lineKey(action);
-      const existing = lines.find((l) => lineKey(l) === key);
-      if (existing) {
+      const { product: p, size } = action;
+      const key = lineKey({ productId: p.id, size });
+      if (lines.some((l) => lineKey(l) === key)) {
         return lines.map((l) => (lineKey(l) === key ? { ...l, qty: Math.min(l.qty + 1, MAX_QTY) } : l));
       }
-      return [...lines, { productId: action.productId, size: action.size, qty: 1 }];
+      return [
+        ...lines,
+        { productId: p.id, handle: p.handle, name: p.name, colour: p.colour, image: p.image, priceCents: p.priceCents, size, qty: 1 },
+      ];
     }
     case "setQty": {
       const qty = Math.max(1, Math.min(MAX_QTY, Math.floor(action.qty) || 1)); // validate input
@@ -45,15 +55,19 @@ function reducer(lines: CartLine[], action: Action): CartLine[] {
   }
 }
 
+const isLine = (l: unknown): l is CartLine => {
+  const x = l as Partial<CartLine>;
+  return (
+    typeof x?.productId === "string" && typeof x.name === "string" && typeof x.image === "string" &&
+    typeof x.size === "string" && Number.isInteger(x.priceCents) && Number.isInteger(x.qty) && x.qty! >= 1 && x.qty! <= MAX_QTY
+  );
+};
+
 function load(): CartLine[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    // Drop anything that no longer matches the catalog (stale or tampered data)
-    return parsed.filter(
-      (l): l is CartLine => typeof l?.productId === "string" && productById.has(l.productId) && typeof l.qty === "number",
-    );
+    localStorage.removeItem("im_cart_v1"); // old format, no longer readable
+    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter(isLine) : []; // drop stale or tampered lines
   } catch {
     return [];
   }
@@ -62,8 +76,8 @@ function load(): CartLine[] {
 interface CartValue {
   lines: CartLineView[];
   count: number;
-  subtotal: number;
-  add: (productId: string, size: Size) => void;
+  subtotal: number; // cents
+  add: (product: Product, size: string) => void;
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
@@ -83,15 +97,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [lines]);
 
   const value = useMemo<CartValue>(() => {
-    const views = lines.flatMap((l) => {
-      const product = productById.get(l.productId); // O(1) per line
-      return product ? [{ ...l, key: lineKey(l), product, lineTotal: product.price * l.qty }] : [];
-    });
+    const views = lines.map((l) => ({ ...l, key: lineKey(l), lineTotal: l.priceCents * l.qty }));
     return {
       lines: views,
       count: views.reduce((n, l) => n + l.qty, 0),
       subtotal: views.reduce((n, l) => n + l.lineTotal, 0),
-      add: (productId, size) => dispatch({ type: "add", productId, size }),
+      add: (product, size) => dispatch({ type: "add", product, size }),
       setQty: (key, qty) => dispatch({ type: "setQty", key, qty }),
       remove: (key) => dispatch({ type: "remove", key }),
       clear: () => dispatch({ type: "clear" }),
@@ -108,4 +119,4 @@ export function useCart(): CartValue {
   return ctx;
 }
 
-export const FREE_SHIPPING_FROM = 300;
+export const FREE_SHIPPING_FROM_CENTS = 300_00;

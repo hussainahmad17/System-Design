@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
+import { useAuth } from "../auth/AuthContext";
 import { useCart } from "../cart/CartContext";
 import { collections } from "../data/catalog";
 import { BagIcon, CloseIcon, MenuIcon, UserIcon } from "./Icons";
@@ -8,6 +9,7 @@ import "./layout.css";
 // Header holds shopping only. Help pages live in the footer so the main nav stays short.
 export default function Header() {
   const { count } = useCart();
+  const { status, user } = useAuth();
   const { pathname } = useLocation();
   // Remember which page the menu was opened on. Navigating changes the path, so the menu closes
   // by itself: derived state, no extra render.
@@ -38,7 +40,7 @@ export default function Header() {
           <nav className="header__nav" aria-label="Shop">
             {collections.map((c) => (
               <NavLink key={c.handle} to={`/collections/${c.handle}`} className="nav-link">
-                {c.handle === "best-sellers" ? "Best sellers" : c.title.replace(" jackets", "")}
+                {c.navLabel}
               </NavLink>
             ))}
           </nav>
@@ -48,7 +50,11 @@ export default function Header() {
           </Link>
 
           <div className="header__actions">
-            <Link to="/account/login" className="icon-btn" aria-label="Account">
+            <Link
+              to={status === "authed" ? "/account" : "/account/login"}
+              className="icon-btn"
+              aria-label={status === "authed" && user ? `Account, signed in as ${user.firstName}` : "Sign in"}
+            >
               <UserIcon />
             </Link>
             <Link to="/cart" className="icon-btn cart-btn" aria-label={`Cart, ${count} items`}>
@@ -78,7 +84,7 @@ export default function Header() {
             <li><Link to="/pages/faq">FAQ</Link></li>
             <li><Link to="/pages/about">About us</Link></li>
             <li><Link to="/pages/contact">Contact us</Link></li>
-            <li><Link to="/account/login">Sign in</Link></li>
+            <li>{status === "authed" ? <Link to="/account">My account</Link> : <Link to="/account/login">Sign in</Link>}</li>
           </ul>
         </nav>
       </div>

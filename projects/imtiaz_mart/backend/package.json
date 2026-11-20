@@ -10,7 +10,8 @@
     "dev": "node --watch --env-file=.env src/server.js",
     "start": "node --env-file=.env src/server.js",
     "test": "node --test \"test/**/*.test.js\"",
-    "test:integration": "node --env-file=.env test/integration/auth.flow.js"
+    "test:integration": "node --env-file=.env test/integration/auth.flow.js",
+    "seed:products": "node --env-file=.env scripts/seedProducts.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

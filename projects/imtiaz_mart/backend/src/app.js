@@ -7,6 +7,7 @@ import { mongoState } from "./db/mongo.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { identityIndexStats } from "./modules/auth/identityIndex.js";
+import { productRouter } from "./modules/products/product.routes.js";
 
 export function createApp() {
   const app = express();
@@ -26,6 +27,7 @@ export function createApp() {
 
   // Versioned REST API: /api/v2 can change shapes later without breaking old clients
   app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1/products", productRouter);
 
   app.use(notFound);
   app.use(errorHandler);

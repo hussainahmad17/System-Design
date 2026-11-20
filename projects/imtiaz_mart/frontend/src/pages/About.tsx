@@ -28,15 +28,15 @@ export default function About() {
         <div className="container stats">
           <div><p className="stats__num">1 maker</p><p className="muted">per jacket, from first cut to final stitch</p></div>
           <div><p className="stats__num">30 days</p><p className="muted">to try it at home and return it</p></div>
-          <div><p className="stats__num">For life</p><p className="muted">free repairs on every jacket we make</p></div>
+          <div><p className="stats__num">For life</p><p className="muted">free repairs on every leather piece we sell</p></div>
         </div>
       </section>
 
       <section className="container section about-cta">
-        <h2>Find your jacket</h2>
+        <h2>Find your next piece</h2>
         <div className="empty__ctas">
-          <Link to="/collections/men" className="btn btn--primary">Shop men</Link>
-          <Link to="/collections/women" className="btn btn--outline">Shop women</Link>
+          <Link to="/collections/best-sellers" className="btn btn--primary">Shop best sellers</Link>
+          <Link to="/collections/leather-jackets" className="btn btn--outline">Shop leather jackets</Link>
         </div>
       </section>
     </>

@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { AuthProvider } from "./auth/AuthContext";
 import { CartProvider } from "./cart/CartContext";
 import { CheckoutLayout, StoreLayout } from "./components/Layouts";
 
@@ -8,6 +9,7 @@ import { CheckoutLayout, StoreLayout } from "./components/Layouts";
 const Home = lazy(() => import("./pages/Home"));
 const Collection = lazy(() => import("./pages/Collection"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Account = lazy(() => import("./pages/Account"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CareGuide = lazy(() => import("./pages/CareGuide"));
@@ -24,6 +26,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/collections/:handle", element: <Collection /> },
+      { path: "/account", element: <Account /> },
       { path: "/account/login", element: <Auth mode="login" /> },
       { path: "/account/register", element: <Auth mode="register" /> },
       { path: "/cart", element: <Cart /> },
@@ -43,8 +46,10 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <CartProvider>
-      <RouterProvider router={router} />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
+    </AuthProvider>
   );
 }

@@ -17,9 +17,9 @@ export default function Footer() {
       <div className="container footer__grid">
         <div className="footer__brand">
           <p className="wordmark wordmark--light">Imtiaz Mart</p>
-          <p>Full-grain leather jackets, cut and stitched by hand in small batches.</p>
+          <p>Leather jackets, shoes, watches, sunglasses and clothing, chosen to last.</p>
           {subscribed ? (
-            <p className="footer__thanks">You're on the list. We'll email you when new jackets arrive.</p>
+            <p className="footer__thanks">You're on the list. We'll email you when new pieces arrive.</p>
           ) : (
             <form className="footer__form" onSubmit={onSubmit}>
               <label htmlFor="newsletter">Get new releases by email</label>

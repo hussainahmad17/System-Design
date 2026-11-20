@@ -156,3 +156,15 @@ p { margin: 0 0 1em; max-width: 68ch; }
     transition-duration: 0.01ms !important;
   }
 }
+
+.field-error { color: var(--error); font-size: var(--fs-sm); }
+.field-ok { color: var(--success); font-size: var(--fs-sm); }
+.form-error {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--error);
+  background: #fbf1f1;
+  color: var(--error);
+  font-size: var(--fs-sm);
+}
+.input[aria-invalid="true"] { border-color: var(--error); }

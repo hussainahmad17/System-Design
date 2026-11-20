@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { FREE_SHIPPING_FROM, useCart } from "../cart/CartContext";
+import { FREE_SHIPPING_FROM_CENTS, useCart } from "../cart/CartContext";
 import Img from "../components/Img";
 import { formatPrice } from "../data/catalog";
 import "./checkout.css";
 
 const SHIPPING = {
-  standard: { label: "Standard, 4 to 6 business days", price: 15 },
-  express: { label: "Express, 1 to 2 business days", price: 35 },
+  standard: { label: "Standard, 4 to 6 business days", price: 15_00 },
+  express: { label: "Express, 1 to 2 business days", price: 35_00 },
 } as const;
 type ShipKey = keyof typeof SHIPPING;
 
@@ -27,7 +27,7 @@ export default function Checkout() {
     );
   }
 
-  const shipping = ship === "standard" && subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING[ship].price;
+  const shipping = ship === "standard" && subtotal >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING[ship].price;
   const total = subtotal + shipping;
 
   const onSubmit = (e: FormEvent) => {
@@ -78,7 +78,7 @@ export default function Checkout() {
           <fieldset className="options">
             <legend className="visually-hidden">Shipping method</legend>
             {(Object.keys(SHIPPING) as ShipKey[]).map((key) => {
-              const price = key === "standard" && subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING[key].price;
+              const price = key === "standard" && subtotal >= FREE_SHIPPING_FROM_CENTS ? 0 : SHIPPING[key].price;
               return (
                 <label key={key} className="option">
                   <input type="radio" name="ship" checked={ship === key} onChange={() => setShip(key)} />
@@ -116,10 +116,10 @@ export default function Checkout() {
             {lines.map((l) => (
               <li key={l.key}>
                 <span className="mini-lines__img">
-                  <Img id={l.product.image} alt={l.product.name} ratio={1.25} sizes="64px" />
+                  <Img id={l.image} alt={l.name} ratio={1.25} sizes="64px" />
                   <span className="mini-lines__qty">{l.qty}</span>
                 </span>
-                <span>{l.product.name}<br /><span className="muted">Size {l.size}</span></span>
+                <span>{l.name}<br /><span className="muted">{l.size === "One size" ? l.colour : `Size ${l.size}`}</span></span>
                 <span>{formatPrice(l.lineTotal)}</span>
               </li>
             ))}

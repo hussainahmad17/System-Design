@@ -79,13 +79,13 @@
   font-family: var(--font-display);
   font-size: var(--fs-lg);
 }
+/* 5 categories. Phone: one wide tile, then a 2×2 block. Desktop: tall tile left, 2×2 block right. */
 .tile { aspect-ratio: 4 / 5; }
-.tile--tall, .tile:last-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+.tile--tall { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
 @media (min-width: 900px) {
-  .tile, .tile--tall, .tile:last-child { aspect-ratio: auto; grid-column: auto; }
-  .tiles { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(2, clamp(260px, 26vw, 360px)); }
+  .tile, .tile--tall { aspect-ratio: auto; }
+  .tiles { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(2, clamp(240px, 24vw, 340px)); }
   .tile--tall { grid-column: 1; grid-row: 1 / span 2; }
-  .tile:nth-child(2) { grid-column: 2 / span 2; }
   .tile__label { left: 24px; bottom: 20px; font-size: var(--fs-xl); }
 }
 
