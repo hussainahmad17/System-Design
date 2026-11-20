@@ -73,3 +73,4 @@
 .totals div { display: flex; justify-content: space-between; }
 .totals dd { margin: 0; }
 .totals__grand { padding-top: 10px; font-size: var(--fs-md); font-weight: 500; }
+.checkout__account { margin: 0; padding: 14px 16px; background: var(--hide); font-size: var(--fs-sm); }

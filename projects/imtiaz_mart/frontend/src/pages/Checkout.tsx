@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
+import { useAuth } from "../auth/AuthContext";
 import { FREE_SHIPPING_FROM_CENTS, useCart } from "../cart/CartContext";
 import Img from "../components/Img";
 import { formatPrice } from "../data/catalog";
@@ -14,6 +15,7 @@ type ShipKey = keyof typeof SHIPPING;
 // UI only: no payment provider is connected yet.
 export default function Checkout() {
   const { lines, subtotal } = useCart();
+  const { status, user } = useAuth();
   const [ship, setShip] = useState<ShipKey>("standard");
   const [submitted, setSubmitted] = useState(false);
 
@@ -37,17 +39,28 @@ export default function Checkout() {
 
   return (
     <div className="checkout">
-      <form className="checkout__form" onSubmit={onSubmit}>
+      {/* key: re-mount once the session is restored, so the account's details pre-fill the fields */}
+      <form className="checkout__form" onSubmit={onSubmit} key={user?.id ?? "guest"}>
         <h1 className="visually-hidden">Checkout</h1>
         <section>
           <div className="checkout__head">
             <h2>Contact</h2>
-            <Link to="/account/login" className="link">Sign in</Link>
+            {status === "guest" && (
+              // state.from: after signing in, come straight back to checkout
+              <Link to="/account/login" state={{ from: "/checkout" }} className="link">Sign in</Link>
+            )}
           </div>
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input id="email" className="input" type="email" required autoComplete="email" />
-          </div>
+          {user ? (
+            <p className="checkout__account">
+              Signed in as <strong>{user.email}</strong>
+              <input type="hidden" name="email" value={user.email} />
+            </p>
+          ) : (
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input id="email" name="email" className="input" type="email" required autoComplete="email" />
+            </div>
+          )}
         </section>
 
         <section>
@@ -62,8 +75,8 @@ export default function Checkout() {
             </select>
           </div>
           <div className="field-row">
-            <div className="field"><label htmlFor="fname">First name</label><input id="fname" className="input" required autoComplete="given-name" /></div>
-            <div className="field"><label htmlFor="lname">Last name</label><input id="lname" className="input" required autoComplete="family-name" /></div>
+            <div className="field"><label htmlFor="fname">First name</label><input id="fname" className="input" required autoComplete="given-name" defaultValue={user?.firstName} /></div>
+            <div className="field"><label htmlFor="lname">Last name</label><input id="lname" className="input" required autoComplete="family-name" defaultValue={user?.lastName} /></div>
           </div>
           <div className="field"><label htmlFor="address">Address</label><input id="address" className="input" required autoComplete="street-address" /></div>
           <div className="field-row">

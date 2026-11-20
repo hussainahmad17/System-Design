@@ -1,6 +1,7 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { connectMongo, disconnectMongo } from "./db/mongo.js";
+import { connectRedis, disconnectRedis } from "./db/redis.js";
 import { warmUpIdentityIndex } from "./modules/auth/identityIndex.js";
 import { Product } from "./modules/products/product.model.js";
 import { User } from "./modules/users/user.model.js";
@@ -11,7 +12,7 @@ import { User } from "./modules/users/user.model.js";
 // 3. load the bloom filters (an empty filter would say "free" for taken emails)
 // 4. only then accept traffic
 async function start() {
-  await connectMongo();
+  await Promise.all([connectMongo(), connectRedis()]); // Redis failing is not fatal
   await Promise.all([User.createIndexes(), Product.createIndexes()]);
   await warmUpIdentityIndex();
 
@@ -26,7 +27,7 @@ async function start() {
   const shutdown = (signal) => {
     console.log(`${signal} received, shutting down`);
     server.close(async () => {
-      await disconnectMongo();
+      await Promise.all([disconnectMongo(), disconnectRedis()]);
       process.exit(0);
     });
     setTimeout(() => process.exit(1), 10_000).unref(); // give up after 10 s

@@ -4,6 +4,7 @@ import express from "express";
 import helmet from "helmet";
 import { env } from "./config/env.js";
 import { mongoState } from "./db/mongo.js";
+import { cacheStats } from "./lib/cache.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { identityIndexStats } from "./modules/auth/identityIndex.js";
@@ -22,7 +23,7 @@ export function createApp() {
   app.use(cookieParser());
 
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", db: mongoState(), identityIndex: identityIndexStats() });
+    res.json({ status: "ok", db: mongoState(), cache: cacheStats(), identityIndex: identityIndexStats() });
   });
 
   // Versioned REST API: /api/v2 can change shapes later without breaking old clients

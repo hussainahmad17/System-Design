@@ -10,6 +10,8 @@ const schema = z.object({
   // lookups that mongodb+srv:// URLs need (seen as "querySrv ECONNREFUSED").
   DNS_SERVERS: z.string().optional(),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  // Optional. Without it the app runs normally and reads everything from MongoDB (cache off).
+  REDIS_URL: z.string().regex(/^rediss?:\/\//, "REDIS_URL must start with redis:// or rediss://").optional(),
 
   JWT_ACCESS_SECRET: z.string().min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),
   JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),

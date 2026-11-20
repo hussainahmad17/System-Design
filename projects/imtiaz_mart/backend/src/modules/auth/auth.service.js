@@ -1,3 +1,4 @@
+import { cached, invalidate } from "../../lib/cache.js";
 import { HttpError } from "../../lib/httpError.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "../../lib/password.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../lib/tokens.js";
@@ -90,11 +91,21 @@ export async function logoutEverywhere(userId) {
   await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
 }
 
+// /me runs on every page load (session restore) and the profile almost never changes: cache it.
+const PROFILE_TTL_S = 15 * 60;
+const profileKey = (userId) => `user:${userId}:profile`;
+
 export async function getProfile(userId) {
-  const user = await User.findById(userId).select(PUBLIC_FIELDS).lean();
-  if (!user) throw invalidSession();
-  return toPublicUser(user);
+  const { value } = await cached(profileKey(userId), PROFILE_TTL_S, async () => {
+    const user = await User.findById(userId).select(PUBLIC_FIELDS).lean();
+    if (!user) throw invalidSession(); // thrown inside the loader, so "not found" is never cached
+    return toPublicUser(user);
+  });
+  return value;
 }
+
+/** Call whenever a user's profile changes or the account is deleted. */
+export const forgetProfile = (userId) => invalidate(profileKey(userId));
 
 export async function checkAvailability(query) {
   const field = query.email !== undefined ? "email" : "username";

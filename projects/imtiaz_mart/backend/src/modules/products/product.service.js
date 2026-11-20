@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
+import { cached } from "../../lib/cache.js";
 import { HttpError } from "../../lib/httpError.js";
+import { getCatalogVersion } from "./catalogVersion.js";
 import { Product } from "./product.model.js";
 
 // Each sort = one field + direction, always with _id as the tie-breaker (same direction).
@@ -52,7 +54,36 @@ function seekFilter({ field, dir }, { value, id }, forward) {
 /**
  * @param {{category?: string, sort: keyof SORTS, limit: number, after?: string, before?: string}} q
  */
-export async function listProducts({ category, sort, limit, after, before }) {
+// Cache lifetimes. Short enough that a missed invalidation heals itself quickly.
+const PAGE_TTL_S = 5 * 60;
+const COUNT_TTL_S = 10 * 60;
+
+/**
+ * Cached product list. Returns the API body plus whether the page came from Redis.
+ * @param {{category?: string, sort: keyof SORTS, limit: number, after?: string, before?: string}} q
+ */
+export async function listProducts(q) {
+  const cursor = q.after ?? q.before;
+  if (cursor) decodeCursor(q.sort, cursor); // reject bad cursors BEFORE touching the cache
+
+  const v = await getCatalogVersion();
+  const scope = q.category ?? "all";
+  const dir = q.after ? "a" : q.before ? "b" : "first";
+  // Key = every input that changes the answer. Same inputs -> same key -> shared by all visitors.
+  const pageKey = `products:v${v}:page:${scope}:${q.sort}:${q.limit}:${dir}:${cursor ?? "-"}`;
+  const countKey = `products:v${v}:count:${scope}`;
+
+  const [page, count] = await Promise.all([
+    cached(pageKey, PAGE_TTL_S, () => loadPage(q)),
+    // Cached on its own: an uncached page still skips this second query
+    cached(countKey, COUNT_TTL_S, () => Product.countDocuments(q.category ? { category: q.category } : {})),
+  ]);
+
+  return { body: { ...page.value, total: count.value }, cacheHit: page.hit };
+}
+
+/** The MongoDB side: one indexed keyset query. */
+async function loadPage({ category, sort, limit, after, before }) {
   const spec = SORTS[sort];
   const base = category ? { category } : {};
   const cursor = after ?? before;
@@ -61,15 +92,11 @@ export async function listProducts({ category, sort, limit, after, before }) {
   const filter = cursor ? { ...base, ...seekFilter(spec, decodeCursor(sort, cursor), forward) } : base;
   const d = forward ? spec.dir : -spec.dir;
 
-  const [rows, total] = await Promise.all([
-    Product.find(filter)
-      .sort({ [spec.field]: d, _id: d })
-      .limit(limit + 1) // one extra row tells us whether another page exists, without a COUNT
-      .select(LIST_FIELDS)
-      .lean(),
-    // Uses the category index prefix (COUNT_SCAN). Cheap at 100s of rows; cache it if it grows.
-    Product.countDocuments(base),
-  ]);
+  const rows = await Product.find(filter)
+    .sort({ [spec.field]: d, _id: d })
+    .limit(limit + 1) // one extra row tells us whether another page exists, without a COUNT
+    .select(LIST_FIELDS)
+    .lean();
 
   const hasMore = rows.length > limit;
   const page = hasMore ? rows.slice(0, limit) : rows;
@@ -85,7 +112,6 @@ export async function listProducts({ category, sort, limit, after, before }) {
       nextCursor: hasNext && page.length ? encodeCursor(sort, page.at(-1)) : null,
       prevCursor: hasPrev && page.length ? encodeCursor(sort, page[0]) : null,
     },
-    total,
   };
 }
 

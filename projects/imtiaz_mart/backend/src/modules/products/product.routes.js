@@ -18,8 +18,12 @@ export const productRouter = Router();
 
 // GET /api/v1/products?category=shoes&sort=price-asc&limit=10&after=<cursor>
 productRouter.get("/", async (req, res) => {
-  const result = await listProducts(listSchema.parse({ ...req.query }));
-  // Catalog data is the same for everyone and changes rarely: let browsers (and later a CDN)
-  // reuse it for 60 s, and serve a stale copy for 5 min while refreshing in the background.
-  res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300").json(result);
+  const { body, cacheHit } = await listProducts(listSchema.parse({ ...req.query }));
+  // Two cache layers:
+  // - Redis (server): shared by every visitor and every API server
+  // - Cache-Control (browser, later a CDN): 60 s, then a stale copy for 5 min while it refreshes
+  res
+    .set("X-Cache", cacheHit ? "HIT" : "MISS") // lets us see the cache working in DevTools
+    .set("Cache-Control", "public, max-age=60, stale-while-revalidate=300")
+    .json(body);
 });

@@ -49,6 +49,10 @@ export async function request<T>(path: string, { method = "GET", body, token, si
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const e = data?.error;
+    // 502/503/504 without our JSON error = a proxy (Vite now, Nginx later) couldn't reach the API
+    if (!e && res.status >= 502 && res.status <= 504) {
+      throw new ApiError(res.status, "SERVER_UNAVAILABLE", "Our server isn't responding right now. Please try again in a moment.");
+    }
     throw new ApiError(res.status, e?.code ?? "UNKNOWN", e?.message ?? `Request failed (${res.status})`, e?.details);
   }
   return data as T;
