@@ -22,7 +22,8 @@ const result = await Product.bulkWrite(
   products.map(({ createdAt, ...fields }) => ({
     updateOne: {
       filter: { handle: fields.handle },
-      update: { $set: { ...fields, updatedAt: new Date() }, $setOnInsert: { createdAt } },
+      // stock only on INSERT: re-seeding must never reset stock that real orders have used
+      update: { $set: { ...fields, updatedAt: new Date() }, $setOnInsert: { createdAt, stock: 3 + (fields.salesCount % 38) } },
       upsert: true,
     },
   })),

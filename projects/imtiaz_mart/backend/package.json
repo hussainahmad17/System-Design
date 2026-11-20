@@ -10,7 +10,8 @@
     "dev": "node --watch --env-file=.env src/server.js",
     "start": "node --env-file=.env src/server.js",
     "test": "node --test \"test/**/*.test.js\"",
-    "test:integration": "node --env-file=.env test/integration/auth.flow.js",
+    "test:integration": "node --env-file=.env test/integration/auth.flow.js && node --env-file=.env test/integration/orders.flow.js",
+    "migrate:stock": "node --env-file=.env scripts/backfillStock.js",
     "seed:products": "node --env-file=.env scripts/seedProducts.js",
     "search:setup": "node --env-file=.env scripts/setupSearch.js"
   },

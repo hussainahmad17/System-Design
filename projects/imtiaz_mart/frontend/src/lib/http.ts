@@ -19,9 +19,10 @@ export interface RequestOptions {
   body?: unknown;
   token?: string | null;
   signal?: AbortSignal; // lets a page cancel a request it no longer needs
+  headers?: Record<string, string>;
 }
 
-export async function request<T>(path: string, { method = "GET", body, token, signal }: RequestOptions = {}): Promise<T> {
+export async function request<T>(path: string, { method = "GET", body, token, signal, headers }: RequestOptions = {}): Promise<T> {
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
   let res: Response;
   try {
@@ -31,6 +32,7 @@ export async function request<T>(path: string, { method = "GET", body, token, si
       headers: {
         ...(body !== undefined && { "content-type": "application/json" }),
         ...(token && { authorization: `Bearer ${token}` }),
+        ...headers,
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout,

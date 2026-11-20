@@ -3,6 +3,7 @@ import { env } from "./config/env.js";
 import { connectMongo, disconnectMongo } from "./db/mongo.js";
 import { connectRedis, disconnectRedis } from "./db/redis.js";
 import { warmUpIdentityIndex } from "./modules/auth/identityIndex.js";
+import { Order } from "./modules/orders/order.model.js";
 import { Product } from "./modules/products/product.model.js";
 import { User } from "./modules/users/user.model.js";
 
@@ -13,7 +14,8 @@ import { User } from "./modules/users/user.model.js";
 // 4. only then accept traffic
 async function start() {
   await Promise.all([connectMongo(), connectRedis()]); // Redis failing is not fatal
-  await Promise.all([User.createIndexes(), Product.createIndexes()]);
+  // Order's unique index must exist BEFORE the first order: it's the idempotency race guard
+  await Promise.all([User.createIndexes(), Product.createIndexes(), Order.createIndexes()]);
   await warmUpIdentityIndex();
 
   const server = createApp().listen(env.PORT, () => {

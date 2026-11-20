@@ -38,7 +38,7 @@ export function refreshAccessToken(): Promise<string | null> {
 }
 
 /** Authenticated request: on an expired token, refresh once and retry once. */
-async function authed<T>(path: string, opts: Omit<RequestOptions, "token"> = {}): Promise<T> {
+export async function authed<T>(path: string, opts: Omit<RequestOptions, "token"> = {}): Promise<T> {
   try {
     return await request<T>(path, { ...opts, token: accessToken });
   } catch (err) {

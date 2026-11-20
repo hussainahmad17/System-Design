@@ -17,6 +17,9 @@ const productSchema = new mongoose.Schema(
     // Denormalised counter (docs #15): kept on the product so "best selling" is an indexed sort,
     // not a COUNT over an orders collection on every page view.
     salesCount: { type: Number, default: 0, min: 0 },
+    // Units on hand (one count per product, not per size). Never below 0: the order transaction
+    // only decrements with the guard {stock: {$gte: qty}} (see orders/order.service.js).
+    stock: { type: Number, min: 0, validate: Number.isInteger },
   },
   { timestamps: true, versionKey: false },
 );
