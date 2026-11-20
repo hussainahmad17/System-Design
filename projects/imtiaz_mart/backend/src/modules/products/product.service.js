@@ -115,7 +115,7 @@ async function loadPage({ category, sort, limit, after, before }) {
   };
 }
 
-function toPublicProduct(p) {
+export function toPublicProduct(p) {
   return {
     id: String(p._id),
     handle: p.handle,

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Link, Outlet, ScrollRestoration } from "react-router";
 import Footer from "./Footer";
 import Header from "./Header";
+import Logo from "./Logo";
 
 function PageLoading() {
   return <div className="page-loading" role="status" aria-label="Loading page" />;
@@ -30,7 +31,7 @@ export function CheckoutLayout() {
     <>
       <header className="checkout-header">
         <div className="container checkout-header__inner">
-          <Link to="/" className="wordmark">Imtiaz Mart</Link>
+          <Link to="/" className="header__logo" aria-label="Imtiaz Mart home"><Logo size={44} /></Link>
           <Link to="/cart" className="link">Back to cart</Link>
         </div>
       </header>

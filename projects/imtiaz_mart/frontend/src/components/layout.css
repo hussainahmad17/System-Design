@@ -172,3 +172,8 @@
 .checkout-header__inner { display: flex; justify-content: space-between; align-items: center; height: var(--header-h); }
 
 .page-loading { min-height: 70vh; }
+
+/* ---------- Logo ---------- */
+.header__logo { display: inline-flex; border-radius: 12px; }
+.header__logo .logo { display: block; transition: transform 0.2s var(--ease); }
+.header__logo:hover .logo { transform: rotate(-4deg); }

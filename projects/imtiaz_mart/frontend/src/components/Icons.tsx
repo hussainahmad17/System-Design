@@ -13,6 +13,9 @@ export const MenuIcon = () => (
 export const CloseIcon = () => (
   <svg {...base}><path d="M5 5l14 14M19 5 5 19" /></svg>
 );
+export const SearchIcon = () => (
+  <svg {...base}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+);
 export const ChevronIcon = () => (
   <svg {...base} width={16} height={16}><path d="m6 9 6 6 6-6" /></svg>
 );

@@ -11,7 +11,8 @@
     "start": "node --env-file=.env src/server.js",
     "test": "node --test \"test/**/*.test.js\"",
     "test:integration": "node --env-file=.env test/integration/auth.flow.js",
-    "seed:products": "node --env-file=.env scripts/seedProducts.js"
+    "seed:products": "node --env-file=.env scripts/seedProducts.js",
+    "search:setup": "node --env-file=.env scripts/setupSearch.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

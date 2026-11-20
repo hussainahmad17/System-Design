@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import Img from "../components/Img";
+import Pager from "../components/Pager";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import { collectionByHandle, fetchProducts, type CategoryHandle, type CollectionHandle, type ProductPage, type SortKey } from "../data/catalog";
 import { ApiError } from "../lib/http";
@@ -134,24 +135,15 @@ export default function Collection() {
           </div>
         )}
 
-        {data && (data.page.prevCursor || data.page.nextCursor) && (
-          <nav className="pager" aria-label="Pages">
-            <button
-              className="btn btn--outline"
-              disabled={!data.page.prevCursor || loading}
-              onClick={() => go({ before: data.page.prevCursor!, p: pageNo > 2 ? String(pageNo - 1) : undefined })}
-            >
-              Previous
-            </button>
-            <span className="muted">Page {pageNo}</span>
-            <button
-              className="btn btn--outline"
-              disabled={!data.page.nextCursor || loading}
-              onClick={() => go({ after: data.page.nextCursor!, p: String(pageNo + 1) })}
-            >
-              Next
-            </button>
-          </nav>
+        {data && (
+          <Pager
+            pageNo={pageNo}
+            hasPrev={!!data.page.prevCursor}
+            hasNext={!!data.page.nextCursor}
+            disabled={loading}
+            onPrev={() => go({ before: data.page.prevCursor!, p: pageNo > 2 ? String(pageNo - 1) : undefined })}
+            onNext={() => go({ after: data.page.nextCursor!, p: String(pageNo + 1) })}
+          />
         )}
       </section>
     </>
