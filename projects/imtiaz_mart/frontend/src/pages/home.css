@@ -1,0 +1,126 @@
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  min-height: min(84vh, 780px);
+  display: flex;
+  align-items: flex-end;
+  color: var(--white);
+  overflow: hidden;
+  background: var(--espresso);
+}
+.hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Explicit stacking: photo (0) < gradient (1) < seam and text (2) */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(43, 27, 21, 0.94) 0%, rgba(43, 27, 21, 0.78) 55%, rgba(43, 27, 21, 0.2) 90%);
+}
+/* The saddle-stitch seam: the signature detail */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: clamp(10px, 2vw, 20px);
+  z-index: 2;
+  border: 2px dashed rgba(214, 150, 92, 0.85);
+  pointer-events: none;
+  animation: stitch-in 1.2s var(--ease) both;
+}
+@keyframes stitch-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.hero__content {
+  position: relative;
+  z-index: 3;
+  padding-block: clamp(48px, 9vw, 112px);
+  padding-inline: calc(var(--gutter) + 16px); /* clear the stitched seam */
+}
+.hero__title {
+  font-size: var(--fs-display);
+  max-width: 14ch;
+  line-height: 1.04;
+  margin-bottom: 20px;
+}
+.hero__text { font-size: var(--fs-md); max-width: 44ch; color: var(--suede); }
+.hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+/* ---------- Shop by style tiles ---------- */
+/* minmax(0, …) lets columns shrink below the image's intrinsic width (prevents sideways scroll) */
+.tiles { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--hide);
+  text-decoration: none;
+  color: var(--white);
+}
+.tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.tile:hover img { transform: scale(1.03); }
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(43, 27, 21, 0.7), transparent 55%);
+}
+.tile__label {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+}
+.tile { aspect-ratio: 4 / 5; }
+.tile--tall, .tile:last-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+@media (min-width: 900px) {
+  .tile, .tile--tall, .tile:last-child { aspect-ratio: auto; grid-column: auto; }
+  .tiles { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(2, clamp(260px, 26vw, 360px)); }
+  .tile--tall { grid-column: 1; grid-row: 1 / span 2; }
+  .tile:nth-child(2) { grid-column: 2 / span 2; }
+  .tile__label { left: 24px; bottom: 20px; font-size: var(--fs-xl); }
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 24px;
+  margin-bottom: 32px;
+}
+.section-head h2 { margin: 0; }
+
+/* ---------- Craft split ---------- */
+.split { display: grid; gap: 40px; align-items: center; }
+.split__img { width: 100%; }
+.split__text h2 { font-size: var(--fs-3xl); }
+@media (min-width: 900px) {
+  .split { grid-template-columns: 1fr 1fr; gap: 72px; }
+}
+.facts { margin: 32px 0; display: grid; gap: 20px; }
+.facts > div { padding-top: 16px; border-top: 1px solid var(--suede); }
+.facts dt { font-family: var(--font-display); font-size: var(--fs-lg); }
+.facts dd { margin: 4px 0 0; color: var(--muted); }
+
+/* ---------- Care band ---------- */
+.care-band { position: relative; color: var(--white); overflow: hidden; background: var(--espresso); }
+.care-band__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; }
+.care-band__content { position: relative; padding-block: clamp(64px, 10vw, 128px); }
+.care-band__content h2 { font-size: var(--fs-3xl); max-width: 16ch; }
+.care-band__content p { color: var(--suede); font-size: var(--fs-md); max-width: 46ch; }
+.care-band .btn { margin-top: 12px; }
+
+/* ---------- Promises ---------- */
+.promises { display: grid; gap: 32px; }
+.promises > div { border-top: 1px solid var(--espresso); padding-top: 20px; }
+.promises p { margin: 0; }
+@media (min-width: 768px) { .promises { grid-template-columns: repeat(3, 1fr); } }

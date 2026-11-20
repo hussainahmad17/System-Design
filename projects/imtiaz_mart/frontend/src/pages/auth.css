@@ -1,0 +1,12 @@
+.auth { display: grid; }
+.auth__img { display: none; }
+.auth__panel { width: 100%; max-width: 480px; margin-inline: auto; padding: 48px var(--gutter) 80px; }
+@media (min-width: 900px) {
+  .auth { grid-template-columns: 1fr 1fr; min-height: calc(100vh - var(--header-h) - 40px); }
+  .auth__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .auth__panel { align-self: center; padding-block: 64px; }
+}
+.auth__tabs { display: flex; gap: 28px; margin-bottom: 40px; border-bottom: 1px solid var(--suede); }
+.auth__tab { padding: 10px 0; margin-bottom: -1px; text-decoration: none; color: var(--muted); border-bottom: 2px solid transparent; }
+.auth__tab[aria-selected="true"] { color: var(--espresso); border-bottom-color: var(--espresso); }
+.auth__forgot { font-size: var(--fs-sm); margin-top: -4px; }

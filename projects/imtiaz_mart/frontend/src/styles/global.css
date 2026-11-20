@@ -1,0 +1,158 @@
+/* ---------- Design tokens ---------- */
+:root {
+  --espresso: #2b1b15;
+  --oxblood: #6b1f1f;
+  --oxblood-dark: #521616;
+  --cognac: #a8662f;
+  --suede: #dcd3c8;
+  --hide: #f2efec;
+  --white: #ffffff;
+  --muted: #6e5f57;
+  --error: #9b1c1c;
+  --success: #2f5d3a;
+
+  --font-display: "Bodoni Moda", "Didot", Georgia, serif;
+  --font-body: "Jost", "Futura", system-ui, sans-serif;
+
+  /* Classical type scale */
+  --fs-sm: 0.875rem;  /* 14 */
+  --fs-base: 1rem;    /* 16 */
+  --fs-md: 1.125rem;  /* 18 */
+  --fs-lg: 1.3125rem; /* 21 */
+  --fs-xl: 1.5rem;    /* 24 */
+  --fs-2xl: 2.25rem;  /* 36 */
+  --fs-3xl: clamp(2.25rem, 5vw, 3rem);    /* 36 → 48 */
+  --fs-display: clamp(2.5rem, 7vw, 4.5rem); /* 40 → 72 */
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --max: 1320px;
+  --header-h: 72px;
+  --radius: 2px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--espresso);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.12;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: var(--fs-3xl); }
+h2 { font-size: var(--fs-2xl); }
+h3 { font-size: var(--fs-xl); }
+p { margin: 0 0 1em; max-width: 68ch; }
+
+/* Saddle-stitch focus ring: the one motif reused across the store */
+:focus-visible {
+  outline: 2px dashed var(--cognac);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.section { padding-block: clamp(48px, 8vw, 96px); }
+.section--hide { background: var(--hide); }
+.lede { font-size: var(--fs-md); color: var(--muted); }
+.muted { color: var(--muted); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.btn--primary { background: var(--oxblood); color: var(--white); }
+.btn--primary:hover { background: var(--oxblood-dark); }
+.btn--outline { border-color: var(--espresso); background: transparent; }
+.btn--outline:hover { background: var(--espresso); color: var(--white); }
+.btn--light { background: var(--white); color: var(--espresso); }
+.btn--light:hover { background: var(--hide); }
+.btn--block { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.link {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--suede);
+  text-decoration-thickness: 1px;
+}
+.link:hover { text-decoration-color: var(--cognac); }
+
+/* ---------- Forms ---------- */
+.field { display: grid; gap: 6px; margin-bottom: 16px; }
+.field label { font-size: var(--fs-sm); font-weight: 500; }
+.input, .select, .textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--suede);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+.textarea { min-height: 140px; resize: vertical; }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--espresso); }
+.field-row { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 600px) { .field-row { grid-template-columns: 1fr 1fr; } }
+.form-note { font-size: var(--fs-sm); color: var(--muted); }
+.notice {
+  padding: 14px 16px;
+  border-left: 3px solid var(--success);
+  background: var(--hide);
+  font-size: var(--fs-sm);
+}
+
+/* ---------- Simple content pages (about, care, FAQ...) ---------- */
+.page-head {
+  padding-block: clamp(40px, 7vw, 80px) clamp(24px, 4vw, 40px);
+  border-bottom: 1px solid var(--suede);
+}
+.page-head p { color: var(--muted); font-size: var(--fs-md); }
+.prose { max-width: 720px; }
+.prose h2 { font-size: var(--fs-xl); margin-top: 2em; }
+.prose li { margin-bottom: 0.5em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
