@@ -8,7 +8,32 @@ import { redis } from "../db/redis.js";
 // The cache can make the store faster; it must never make it unavailable.
 
 const COMMAND_TIMEOUT_MS = 400; // a cache slower than this isn't helping; go to the DB
-const stats = { hits: 0, misses: 0, errors: 0, bypassed: 0 };
+// misses = real DB loads; coalesced = requests that waited for someone else's load instead
+const stats = { hits: 0, misses: 0, coalesced: 0, errors: 0, bypassed: 0 };
+
+// Single-flight: key -> Promise of the DB load that is running right now (in THIS process).
+// Load test: when a hot entry expired, up to 291 requests missed at once and all ran the
+// same MongoDB query (cache stampede). Now the first request loads; the rest await its promise.
+// Entries live only while a load (and its cache write) is running, so the map stays tiny.
+const inFlight = new Map();
+
+/** Join the running load for this key, or start one. `store` writes the result to Redis. */
+function loadOnce(key, load, store) {
+  const running = inFlight.get(key);
+  if (running) {
+    stats.coalesced++;
+    return running;
+  }
+  stats.misses++;
+  const p = load();
+  inFlight.set(key, p);
+  // Keep the entry until the Redis write lands, so requests arriving in that gap reuse
+  // this value instead of missing again. The caller does NOT wait for the write.
+  p.then(store)
+    .catch(() => {}) // load errors reach the callers through `p`; don't cache failures
+    .finally(() => inFlight.delete(key));
+  return p;
+}
 
 export function withTimeout(promise) {
   let timer;
@@ -28,10 +53,18 @@ export function withTimeout(promise) {
  * @returns {Promise<{ value: T, hit: boolean }>}
  */
 export async function cached(key, ttlSeconds, load) {
+  // A load for this key is already running: wait for it (skips a Redis round trip too)
+  const running = inFlight.get(key);
+  if (running) {
+    stats.coalesced++;
+    return { value: await running, hit: false };
+  }
+
   const r = redis();
   if (!r) {
+    // Redis down: every request would hit MongoDB, so single-flight matters most here
     stats.bypassed++;
-    return { value: await load(), hit: false };
+    return { value: await loadOnce(key, load, () => {}), hit: false };
   }
 
   try {
@@ -44,12 +77,12 @@ export async function cached(key, ttlSeconds, load) {
     stats.errors++; // timeout, disconnect or bad JSON: treat as a miss
   }
 
-  stats.misses++;
-  const value = await load(); // DB errors propagate as normal; failures are never cached
-  // Write in the background: the user doesn't wait for the cache write
-  withTimeout(r.set(key, JSON.stringify(value), { expiration: { type: "EX", value: ttlSeconds } })).catch(() => {
-    stats.errors++;
-  });
+  // DB errors propagate as normal; failures are never cached
+  const value = await loadOnce(key, load, (v) =>
+    withTimeout(r.set(key, JSON.stringify(v), { expiration: { type: "EX", value: ttlSeconds } })).catch(() => {
+      stats.errors++;
+    }),
+  );
   return { value, hit: false };
 }
 
@@ -63,7 +96,7 @@ export async function invalidate(...keys) {
 }
 
 export function cacheStats() {
-  const lookups = stats.hits + stats.misses;
+  const lookups = stats.hits + stats.misses + stats.coalesced;
   return {
     enabled: redis() !== null,
     ...stats,

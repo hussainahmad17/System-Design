@@ -74,3 +74,40 @@ test("loader errors are thrown and never cached", async () => {
   assert.equal(r.store.has("k6"), false);
   assert.ok(cacheStats().misses >= 1);
 });
+
+// ---------- Single-flight (cache stampede protection) ----------
+const slowLoader = (value, ms = 50) => async () => { loads++; await new Promise((r) => setTimeout(r, ms)); return value; };
+
+test("stampede: 100 simultaneous misses on one key -> 1 DB load, everyone gets the value", async () => {
+  const r = fakeRedis();
+  __setRedisClientForTests(r);
+  const before = cacheStats().coalesced;
+  const results = await Promise.all(Array.from({ length: 100 }, () => cached("sf1", 60, slowLoader("page1"))));
+  assert.equal(loads, 1, "only the first request queried the DB");
+  assert.ok(results.every((x) => x.value === "page1" && x.hit === false));
+  assert.equal(cacheStats().coalesced - before, 99);
+  await new Promise((res) => setTimeout(res, 10));
+  assert.equal(r.store.get("sf1"), JSON.stringify("page1"), "written to Redis once");
+});
+
+test("Redis down: 50 simultaneous requests -> 1 DB load", async () => {
+  __setRedisClientForTests(null);
+  await Promise.all(Array.from({ length: 50 }, () => cached("sf2", 60, slowLoader("db"))));
+  assert.equal(loads, 1);
+});
+
+test("a failed load is shared by its waiters, then the next request retries", async () => {
+  __setRedisClientForTests(fakeRedis());
+  const failing = async () => { loads++; await new Promise((r) => setTimeout(r, 20)); throw new Error("db down"); };
+  const settled = await Promise.allSettled(Array.from({ length: 10 }, () => cached("sf3", 60, failing)));
+  assert.equal(loads, 1);
+  assert.ok(settled.every((s) => s.status === "rejected"));
+  assert.deepEqual(await cached("sf3", 60, slowLoader("ok", 1)), { value: "ok", hit: false }, "not stuck on the error");
+  assert.equal(loads, 2);
+});
+
+test("different keys load independently", async () => {
+  __setRedisClientForTests(fakeRedis());
+  await Promise.all([cached("sfA", 60, slowLoader("a")), cached("sfB", 60, slowLoader("b"))]);
+  assert.equal(loads, 2);
+});
