@@ -8,7 +8,7 @@ import { availabilitySchema, loginSchema, registerSchema } from "./auth.schemas.
 const REFRESH_COOKIE = "rt";
 const cookieOptions = {
   httpOnly: true,
-  secure: env.isProd, // HTTPS only in production
+  secure: env.cookieSecure, // HTTPS only (production default)
   sameSite: "strict",
   path: "/api/v1/auth",
   maxAge: env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000,

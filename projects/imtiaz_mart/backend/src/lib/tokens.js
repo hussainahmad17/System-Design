@@ -7,7 +7,7 @@ import { env } from "../config/env.js";
 // - Refresh token: long-lived (7 days), stored in an httpOnly cookie that JavaScript can't read.
 //   Used only to get a new access token. Carries a version number so we can revoke it.
 
-const COMMON = { issuer: "imtiaz-mart", audience: "imtiaz-mart-web" };
+const COMMON = { issuer: "scale-cart", audience: "scale-cart-web" };
 // Pin the algorithm on verify: stops "alg: none" and algorithm-confusion attacks.
 const VERIFY = { ...COMMON, algorithms: ["HS256"] };
 

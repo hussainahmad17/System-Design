@@ -10,7 +10,7 @@ import { redis } from "../db/redis.js";
 const COMMAND_TIMEOUT_MS = 400; // a cache slower than this isn't helping; go to the DB
 const stats = { hits: 0, misses: 0, errors: 0, bypassed: 0 };
 
-function withTimeout(promise) {
+export function withTimeout(promise) {
   let timer;
   return Promise.race([
     promise,

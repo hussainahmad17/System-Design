@@ -18,12 +18,13 @@ export default function TrackOrder() {
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const raw = String(new FormData(e.currentTarget).get("order") ?? "").trim().toUpperCase();
-    if (!/^IM-?\d{4,8}$/.test(raw)) {
-      setError("Enter the order number from your confirmation email. It looks like IM-10482.");
+    // Order numbers are "SC-" + 8 hex characters (the end of the order's id), e.g. SC-32833A06
+    if (!/^SC-?[0-9A-F]{8}$/.test(raw)) {
+      setError("Enter the order number from your confirmation email. It looks like SC-32833A06.");
       return;
     }
     setError("");
-    setOrder(raw.startsWith("IM-") ? raw : raw.replace("IM", "IM-"));
+    setOrder(raw.startsWith("SC-") ? raw : raw.replace("SC", "SC-"));
   };
 
   return (
@@ -37,7 +38,7 @@ export default function TrackOrder() {
         <form onSubmit={onSubmit}>
           <div className="field">
             <label htmlFor="order">Order number</label>
-            <input id="order" name="order" className="input" required placeholder="IM-10482" aria-invalid={!!error} aria-describedby={error ? "order-error" : undefined} />
+            <input id="order" name="order" className="input" required placeholder="SC-32833A06" aria-invalid={!!error} aria-describedby={error ? "order-error" : undefined} />
             {error && <span id="order-error" className="field-error">{error}</span>}
           </div>
           <div className="field">

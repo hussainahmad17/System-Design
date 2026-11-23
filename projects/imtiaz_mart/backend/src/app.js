@@ -16,8 +16,9 @@ export function createApp() {
   const app = express();
 
   app.disable("x-powered-by");
-  // Behind Nginx later: set to 1 so rate limits see the real client IP from X-Forwarded-For
-  app.set("trust proxy", false);
+  // Behind Nginx: TRUST_PROXY=1, so req.ip (and every rate limit) sees the real client,
+  // not 127.0.0.1. Otherwise one person's failed logins would lock out everyone.
+  app.set("trust proxy", env.TRUST_PROXY);
 
   app.use(helmet()); // security headers
   app.use(cors({ origin: env.CORS_ORIGIN.split(","), credentials: true })); // credentials: allow the refresh cookie
@@ -25,7 +26,8 @@ export function createApp() {
   app.use(cookieParser());
 
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", db: mongoState(), cache: cacheStats(), identityIndex: identityIndexStats() });
+    // port + pid: shows WHICH of the API processes answered (useful behind the load balancer)
+    res.json({ status: "ok", port: env.PORT, pid: process.pid, db: mongoState(), cache: cacheStats(), identityIndex: identityIndexStats() });
   });
 
   // Versioned REST API: /api/v2 can change shapes later without breaking old clients

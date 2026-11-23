@@ -18,8 +18,8 @@ async function start() {
   await Promise.all([User.createIndexes(), Product.createIndexes(), Order.createIndexes()]);
   await warmUpIdentityIndex();
 
-  const server = createApp().listen(env.PORT, () => {
-    console.log(`API listening on http://localhost:${env.PORT}`);
+  const server = createApp().listen(env.PORT, env.HOST, () => {
+    console.log(`API listening on http://${env.HOST ?? "localhost"}:${env.PORT} (pid ${process.pid})`);
   });
   // Don't let slow or stuck clients hold connections open forever
   server.requestTimeout = 30_000;

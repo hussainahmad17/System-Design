@@ -42,7 +42,7 @@ export default function CareGuide() {
             <li>Washing machines and dry cleaners that don't specialise in leather.</li>
           </ul>
 
-          <p className="callout">Torn seam or broken zip? Every Imtiaz Mart jacket has free repairs for life. <Link to="/pages/contact" className="link">Contact us</Link> to arrange one.</p>
+          <p className="callout">Torn seam or broken zip? Every Scale Cart jacket has free repairs for life. <Link to="/pages/contact" className="link">Contact us</Link> to arrange one.</p>
         </article>
 
         <aside className="content-split__aside">

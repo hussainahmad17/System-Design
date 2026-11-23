@@ -31,7 +31,7 @@ export function CheckoutLayout() {
     <>
       <header className="checkout-header">
         <div className="container checkout-header__inner">
-          <Link to="/" className="header__logo" aria-label="Imtiaz Mart home"><Logo size={44} /></Link>
+          <Link to="/" className="header__logo" aria-label="Scale Cart home"><Logo size={44} /></Link>
           <Link to="/cart" className="link">Back to cart</Link>
         </div>
       </header>

@@ -3,7 +3,7 @@ import { HttpError } from "../../lib/httpError.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "../../lib/password.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../lib/tokens.js";
 import { PUBLIC_FIELDS, toPublicUser, User } from "../users/user.model.js";
-import { identityExists, mightExist, rememberIdentity } from "./identityIndex.js";
+import { identityExists, rememberIdentity } from "./identityIndex.js";
 
 const issueTokens = (user) => ({
   accessToken: signAccessToken(user),
@@ -49,13 +49,8 @@ export async function register(input) {
 export async function login({ identifier, password }) {
   const field = identifier.includes("@") ? "email" : "username";
 
-  // Bloom filter says this account definitely doesn't exist: skip the DB read,
-  // but still spend the hashing time so the response isn't faster (no timing leak).
-  if (!mightExist(field, identifier)) {
-    await burnPasswordCheck(password);
-    throw invalidLogin();
-  }
-
+  // No bloom-filter shortcut here: with several API processes, this process's filter may not
+  // have heard about a brand-new account yet, and a wrong "doesn't exist" would reject a real user.
   // One indexed lookup (uniq_email or uniq_username). Fetch only what login needs.
   const user = await User.findOne({ [field]: identifier })
     .select(`${PUBLIC_FIELDS} +passwordHash +tokenVersion`)

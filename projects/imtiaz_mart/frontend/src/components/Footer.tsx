@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer__grid">
         <div className="footer__brand">
-          <p className="wordmark wordmark--light">Imtiaz Mart</p>
+          <p className="wordmark wordmark--light">Scale Cart</p>
           <p>Leather jackets, shoes, watches, sunglasses and clothing, chosen to last.</p>
           {subscribed ? (
             <p className="footer__thanks">You're on the list. We'll email you when new pieces arrive.</p>
@@ -60,7 +60,7 @@ export default function Footer() {
         </nav>
       </div>
       <div className="container footer__base">
-        <p>© {YEAR} Imtiaz Mart</p>
+        <p>© {YEAR} Scale Cart</p>
         <p>Visa, Mastercard, PayPal and Apple Pay accepted</p>
       </div>
     </footer>

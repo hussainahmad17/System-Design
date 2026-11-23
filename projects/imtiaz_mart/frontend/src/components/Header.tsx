@@ -70,7 +70,7 @@ export default function Header() {
             ))}
           </nav>
 
-          <Link to="/" className="header__logo" aria-label="Imtiaz Mart home">
+          <Link to="/" className="header__logo" aria-label="Scale Cart home">
             <Logo />
           </Link>
 

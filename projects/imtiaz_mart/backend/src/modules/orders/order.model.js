@@ -61,7 +61,7 @@ orderSchema.index({ userId: 1, idempotencyKey: 1 }, { unique: true, name: "uniq_
 
 export const Order = mongoose.model("Order", orderSchema);
 
-export const orderNumber = (id) => `IM-${String(id).slice(-8).toUpperCase()}`;
+export const orderNumber = (id) => `SC-${String(id).slice(-8).toUpperCase()}`;
 
 export function toPublicOrder(o) {
   return {

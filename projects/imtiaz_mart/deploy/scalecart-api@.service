@@ -1,0 +1,33 @@
+# systemd TEMPLATE unit: one file, many processes. The text after "@" becomes %i (the port).
+#   scalecart-api@4001  scalecart-api@4002  scalecart-api@4003  = 3 separate Node.js processes
+# Install: sudo cp scalecart-api@.service /etc/systemd/system/ && sudo systemctl daemon-reload
+[Unit]
+Description=Scale Cart API (port %i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=scalecart
+Group=scalecart
+WorkingDirectory=/opt/system-design/projects/imtiaz_mart/backend
+# PORT set here wins over PORT in .env (real environment beats --env-file)
+Environment=PORT=%i
+ExecStart=/usr/bin/node --env-file=.env src/server.js
+# Crash -> restarted in 2 s. Nginx sends traffic to the other two meanwhile.
+Restart=always
+RestartSec=2
+# Graceful stop: SIGTERM lets server.js finish in-flight requests (it gives up after 10 s)
+KillSignal=SIGTERM
+TimeoutStopSec=15
+# One leaking process can't eat the whole 2 GB machine
+MemoryMax=400M
+
+# Hardening: read-only system, no access to /home, can't gain new privileges
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

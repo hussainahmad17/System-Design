@@ -20,7 +20,7 @@ export default function Contact() {
       <section className="container section contact">
         <div>
           {sent ? (
-            <p className="notice" role="status">Messages aren't connected yet, so this one wasn't sent. Email us at hello@imtiazmart.example instead.</p>
+            <p className="notice" role="status">Messages aren't connected yet, so this one wasn't sent. Email us at hello@scalecart.example instead.</p>
           ) : (
             <form onSubmit={onSubmit}>
               <div className="field-row">
@@ -29,7 +29,7 @@ export default function Contact() {
               </div>
               <div className="field">
                 <label htmlFor="order">Order number (optional)</label>
-                <input id="order" className="input" placeholder="IM-10482" pattern="[Ii][Mm]-?[0-9]{4,8}" />
+                <input id="order" className="input" placeholder="SC-32833A06" pattern="[Ss][Cc]-?[0-9A-Fa-f]{8}" />
               </div>
               <div className="field">
                 <label htmlFor="topic">What's it about?</label>
@@ -48,7 +48,7 @@ export default function Contact() {
         </div>
 
         <aside className="contact__info">
-          <div><h2>Email</h2><p>hello@imtiazmart.example</p></div>
+          <div><h2>Email</h2><p>hello@scalecart.example</p></div>
           <div><h2>Phone</h2><p>+92 300 000 0000<br /><span className="muted">Monday to Saturday, 10am to 7pm</span></p></div>
           <div><h2>Workshop</h2><p>12 Tannery Lane<br />Lahore, Pakistan</p></div>
           <div><h2>Before you write</h2><p>Many answers are in our <Link to="/pages/faq" className="link">FAQ</Link>, and you can <Link to="/pages/track-order" className="link">track your order</Link> yourself.</p></div>

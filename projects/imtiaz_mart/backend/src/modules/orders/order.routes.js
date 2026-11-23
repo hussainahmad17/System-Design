@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import { HttpError } from "../../lib/httpError.js";
+import { limiter } from "../../lib/rateLimit.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { placeOrder } from "./order.service.js";
 
@@ -32,13 +32,7 @@ const placeOrderSchema = z.object({
 
 const idempotencyKeySchema = z.uuid();
 
-const orderLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  message: { error: { code: "RATE_LIMITED", message: "Too many order attempts. Try again in a few minutes." } },
-});
+const orderLimit = limiter("orders", 20, 15 * 60 * 1000, "Too many order attempts. Try again in a few minutes.");
 
 export const orderRouter = Router();
 

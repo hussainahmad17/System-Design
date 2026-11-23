@@ -6,14 +6,14 @@ export default function About() {
   return (
     <>
       <header className="container page-head">
-        <h1>About Imtiaz Mart</h1>
+        <h1>About Scale Cart</h1>
         <p>A small leather workshop making jackets one hide at a time.</p>
       </header>
 
       <section className="container section content-split">
         <div className="prose">
           <h2>Where we started</h2>
-          <p>Imtiaz Mart began as a family workshop with two cutting tables and one rule: make a jacket you'd be proud to hand down. We still work that way. A single maker cuts, stitches and finishes each jacket, then signs the inside pocket.</p>
+          <p>Scale Cart began as a family workshop with two cutting tables and one rule: make a jacket you'd be proud to hand down. We still work that way. A single maker cuts, stitches and finishes each jacket, then signs the inside pocket.</p>
           <h2>What we use</h2>
           <p>We buy full-grain cowhide and lambskin from tanneries we visit in person. Full-grain is the top layer of the hide. It's the strongest part, and it's the only kind that builds a real patina as you wear it.</p>
           <h2>Why we repair for free</h2>

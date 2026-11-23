@@ -1,4 +1,4 @@
-// Brand mark: an "IM" monogram on a leather patch, framed by a saddle-stitch seam
+// Brand mark: an "SC" monogram on a leather patch, framed by a saddle-stitch seam
 // (the same stitched-seam motif as the hero and focus rings). Inline SVG: no image request.
 export default function Logo({ size = 48 }: { size?: number }) {
   return (
@@ -15,7 +15,7 @@ export default function Logo({ size = 48 }: { size?: number }) {
         letterSpacing="0.6"
         fill="#f2efec"
       >
-        IM
+        SC
       </text>
     </svg>
   );

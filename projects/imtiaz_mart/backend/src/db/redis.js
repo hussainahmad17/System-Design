@@ -41,6 +41,27 @@ export async function connectRedis() {
   }
 }
 
+// A connection in subscribe mode can only listen, so pub/sub gets its own (a duplicate)
+let subscriber = null;
+
+/**
+ * Listen on a pub/sub channel. Returns false (and the caller carries on) if Redis is unavailable.
+ * node-redis re-subscribes by itself after a reconnect.
+ */
+export async function subscribe(channel, onMessage) {
+  if (!client?.isReady) return false;
+  try {
+    subscriber = client.duplicate();
+    subscriber.on("error", () => {}); // the main client already logs Redis errors
+    await subscriber.connect();
+    await subscriber.subscribe(channel, onMessage);
+    return true;
+  } catch (err) {
+    console.warn(`Redis: could not subscribe to ${channel}:`, err.message);
+    return false;
+  }
+}
+
 /** Tests only: swap in a fake client. */
 export const __setRedisClientForTests = (fake) => {
   client = fake;
@@ -50,5 +71,6 @@ export const __setRedisClientForTests = (fake) => {
 export const redis = () => (client?.isReady ? client : null);
 
 export async function disconnectRedis() {
+  if (subscriber?.isOpen) await subscriber.close().catch(() => {});
   if (client?.isOpen) await client.close().catch(() => {});
 }

@@ -5,6 +5,14 @@ import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
+  // Interface to listen on. Production: 127.0.0.1, so only Nginx (same machine) can reach Node.
+  HOST: z.string().optional(),
+  // How many proxies sit in front of Node. 1 behind Nginx: req.ip = the real client IP from
+  // X-Forwarded-For. Keep 0 when Node is reached directly, or clients could fake their IP.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(3).default(0),
+  // Refresh cookie sent over HTTPS only. Defaults to true in production. Set "false" ONLY while
+  // the site has no certificate yet (plain HTTP), or the browser drops the cookie.
+  COOKIE_SECURE: z.enum(["true", "false"]).optional(),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   // Optional, e.g. "1.1.1.1,8.8.8.8". Only for machines whose local DNS refuses the SRV
   // lookups that mongodb+srv:// URLs need (seen as "querySrv ECONNREFUSED").
@@ -35,4 +43,9 @@ if (parsed.data.JWT_ACCESS_SECRET === parsed.data.JWT_REFRESH_SECRET) {
   process.exit(1);
 }
 
-export const env = Object.freeze({ ...parsed.data, isProd: parsed.data.NODE_ENV === "production" });
+const isProd = parsed.data.NODE_ENV === "production";
+export const env = Object.freeze({
+  ...parsed.data,
+  isProd,
+  cookieSecure: parsed.data.COOKIE_SECURE ? parsed.data.COOKIE_SECURE === "true" : isProd,
+});
