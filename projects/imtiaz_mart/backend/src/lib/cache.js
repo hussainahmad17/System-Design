@@ -25,7 +25,10 @@ function loadOnce(key, load, store) {
     return running;
   }
   stats.misses++;
-  const p = load();
+  // Wrap in a real Promise. A Mongoose Query (e.g. countDocuments()) is only "thenable":
+  // EVERY .then() re-runs it, and the 2nd run throws "Query was already executed" (-> 500).
+  // .then(load) runs it exactly once; it also turns a sync throw into a rejection.
+  const p = Promise.resolve().then(load);
   inFlight.set(key, p);
   // Keep the entry until the Redis write lands, so requests arriving in that gap reuse
   // this value instead of missing again. The caller does NOT wait for the write.

@@ -111,3 +111,21 @@ test("different keys load independently", async () => {
   await Promise.all([cached("sfA", 60, slowLoader("a")), cached("sfB", 60, slowLoader("b"))]);
   assert.equal(loads, 2);
 });
+
+test("loader returning a Mongoose-style Query (a thenable that runs on every .then) is executed once", async () => {
+  __setRedisClientForTests(fakeRedis());
+  // Like Product.countDocuments(): not a Promise; each .then() executes it; a second execution throws
+  const queryLike = () => {
+    let executed = false;
+    return {
+      then(onOk, onErr) {
+        if (executed) return Promise.reject(new Error("Query was already executed")).then(onOk, onErr);
+        executed = true; loads++;
+        return Promise.resolve(42).then(onOk, onErr);
+      },
+    };
+  };
+  const results = await Promise.all([cached("sfQ", 60, queryLike), cached("sfQ", 60, queryLike)]);
+  assert.deepEqual(results.map((r) => r.value), [42, 42]);
+  assert.equal(loads, 1);
+});
