@@ -29,6 +29,11 @@ const schema = z.object({
   // Bloom filter sizing: expected number of users and accepted false-positive rate
   BLOOM_EXPECTED_ITEMS: z.coerce.number().int().positive().default(1_000_000),
   BLOOM_FALSE_POSITIVE_RATE: z.coerce.number().gt(0).lt(1).default(0.01),
+
+  // Support chatbot. Optional: without the key the store runs normally and /chat answers 503.
+  OPENAI_API_KEY: z.string().min(20, "OPENAI_API_KEY looks too short").optional(),
+  // Which LLM answers. Must support function calling on OpenAI's Responses API.
+  OPENAI_MODEL: z.string().min(1).default("gpt-6-luna"),
 });
 
 const parsed = schema.safeParse(process.env);

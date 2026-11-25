@@ -58,6 +58,9 @@ orderSchema.pre("validate", function () {
 // Idempotency lookup "has this user already sent this key?" and the race guard:
 // two requests with the same key can't both insert (the second gets duplicate-key error 11000).
 orderSchema.index({ userId: 1, idempotencyKey: 1 }, { unique: true, name: "uniq_user_idem" });
+// "This user's newest orders": equality field first (userId), then the sort field (createdAt).
+// MongoDB jumps to the user's entries and reads them already sorted: no scan, no in-memory sort.
+orderSchema.index({ userId: 1, createdAt: -1 }, { name: "user_recent" });
 
 export const Order = mongoose.model("Order", orderSchema);
 

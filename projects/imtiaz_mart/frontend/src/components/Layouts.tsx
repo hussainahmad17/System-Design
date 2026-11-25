@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Link, Outlet, ScrollRestoration } from "react-router";
+import ChatWidget from "./ChatWidget";
 import Footer from "./Footer";
 import Header from "./Header";
 import Logo from "./Logo";
@@ -20,6 +21,7 @@ export function StoreLayout() {
         </Suspense>
       </main>
       <Footer />
+      <ChatWidget />
       <ScrollRestoration />
     </>
   );

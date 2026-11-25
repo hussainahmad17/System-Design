@@ -16,6 +16,12 @@ export const CloseIcon = () => (
 export const SearchIcon = () => (
   <svg {...base}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
 );
+export const ChatIcon = () => (
+  <svg {...base}><path d="M4 5h16v11H9l-5 4V5Z" /></svg>
+);
+export const SendIcon = () => (
+  <svg {...base}><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+);
 export const ChevronIcon = () => (
   <svg {...base} width={16} height={16}><path d="m6 9 6 6 6-6" /></svg>
 );

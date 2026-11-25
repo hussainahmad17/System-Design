@@ -27,6 +27,9 @@ export const SEARCH_INDEX_DEFINITION = {
         { type: "token" }, // exact match for the category filter
       ],
       salesCount: { type: "number" },
+      // Lets $search filter by price itself (range), instead of fetching every text match
+      // and throwing away the expensive ones afterwards. Used by the chatbot's "under $X".
+      priceCents: { type: "number" },
       _id: { type: "objectId" },
     },
   },

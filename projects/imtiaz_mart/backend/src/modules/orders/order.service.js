@@ -1,7 +1,34 @@
 import mongoose from "mongoose";
 import { HttpError } from "../../lib/httpError.js";
 import { Product } from "../products/product.model.js";
-import { Order, toPublicOrder } from "./order.model.js";
+import { Order, orderNumber, toPublicOrder } from "./order.model.js";
+
+// ---------- Reading orders (used by the support chatbot's MCP server) ----------
+// Every read is scoped by userId: a customer can only ever see their own orders.
+
+const MAX_LIST = 10;
+// How far back "find my order by number" looks. A bound, so one user can never cause a big read.
+const NUMBER_LOOKUP_WINDOW = 100;
+
+/** The user's newest orders. Uses the user_recent index ({userId, createdAt}). */
+export async function listOrdersForUser(userId, limit = 5) {
+  const rows = await Order.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(Math.min(limit, MAX_LIST))
+    .lean();
+  return rows.map(toPublicOrder);
+}
+
+/**
+ * One order by its number (e.g. "SC-32833A06"), or null.
+ * The number is the END of the order's _id, so no index can look it up directly.
+ * We read the user's recent orders (indexed, bounded) and compare in memory instead.
+ */
+export async function getOrderForUser(userId, number) {
+  const rows = await Order.find({ userId }).sort({ createdAt: -1 }).limit(NUMBER_LOOKUP_WINDOW).lean();
+  const match = rows.find((o) => orderNumber(o._id) === number);
+  return match ? toPublicOrder(match) : null;
+}
 
 // Shipping rules live on the server. The client shows the same numbers, but never decides them.
 const SHIPPING_CENTS = { standard: 15_00, express: 35_00 };

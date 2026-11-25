@@ -33,7 +33,14 @@ const maxEditsFor = (q) => (q.replace(/\s/g, "").length >= 8 ? 2 : 1);
  * Name matches outrank detail matches ("gray tee": a grey t-shirt beats a grey blazer),
  * and exact matches outrank typo matches.
  */
-function searchStage(q, { category, after, before, count }) {
+function searchStage(q, { category, maxPriceCents, after, before, count }) {
+  // filter = must match but doesn't change the score. Both run INSIDE the search index:
+  // category is an exact token match, price is a numeric range (needs priceCents in the index).
+  const filter = [
+    ...(category ? [{ equals: { path: "category", value: category } }] : []),
+    ...(maxPriceCents !== undefined ? [{ range: { path: "priceCents", lte: maxPriceCents } }] : []),
+  ];
+
   // Synonyms are matched against the whole query text, so in "gray tee" the word "tee" alone
   // was never expanded to "t-shirt". Adding one clause per word expands every word; the
   // whole-query clause stays for multi-word synonyms like "running shoe". Capped at 5 words.
@@ -53,8 +60,7 @@ function searchStage(q, { category, after, before, count }) {
         { text: { query: q, path: PATHS, fuzzy: { maxEdits: maxEditsFor(q), prefixLength: 1, maxExpansions: 50 } } },
       ],
       minimumShouldMatch: 1,
-      // filter = must match but doesn't change the score (cheap exact token match)
-      ...(category && { filter: [{ equals: { path: "category", value: category } }] }),
+      ...(filter.length && { filter }),
     },
     // Relevance first, then best sellers, then _id: a total order, so paging never skips or repeats
     sort: { score: { $meta: "searchScore", order: -1 }, salesCount: -1, _id: 1 },
@@ -69,11 +75,13 @@ function searchStage(q, { category, after, before, count }) {
  * we pass the last one back as searchAfter (next page) or the first as searchBefore (previous page).
  * Same idea as our keyset pagination: the engine jumps to the position, no OFFSET.
  */
-export async function search({ q, category, limit, after, before }) {
+export async function search({ q, category, maxPriceCents, limit, after, before }) {
   const query = normalizeQuery(q);
   const v = await getCatalogVersion();
   const dir = after ? "a" : before ? "b" : "first";
-  const key = `search:a${ALGO_VERSION}:v${v}:${category ?? "all"}:${limit}:${dir}:${after ?? before ?? "-"}:${query}`;
+  // The key holds every input that changes the answer. The price limit is one of them:
+  // without it, "jackets under $300" could be served the cached page for "jackets".
+  const key = `search:a${ALGO_VERSION}:v${v}:${category ?? "all"}:p${maxPriceCents ?? "-"}:${limit}:${dir}:${after ?? before ?? "-"}:${query}`;
 
   const { value, hit } = await cached(key, SEARCH_TTL_S, async () => {
     let rows, meta;
@@ -81,7 +89,7 @@ export async function search({ q, category, limit, after, before }) {
       // One round trip: results and the total count together ($$SEARCH_META)
       const [res] = await products()
         .aggregate([
-          { $search: searchStage(query, { category, after, before, count: true }) },
+          { $search: searchStage(query, { category, maxPriceCents, after, before, count: true }) },
           {
             $facet: {
               rows: [

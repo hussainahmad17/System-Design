@@ -3,6 +3,7 @@ import { env } from "./config/env.js";
 import { connectMongo, disconnectMongo } from "./db/mongo.js";
 import { connectRedis, disconnectRedis } from "./db/redis.js";
 import { warmUpIdentityIndex } from "./modules/auth/identityIndex.js";
+import { closeSupportMcp } from "./modules/chat/mcpClient.js";
 import { Order } from "./modules/orders/order.model.js";
 import { Product } from "./modules/products/product.model.js";
 import { User } from "./modules/users/user.model.js";
@@ -29,7 +30,8 @@ async function start() {
   const shutdown = (signal) => {
     console.log(`${signal} received, shutting down`);
     server.close(async () => {
-      await Promise.all([disconnectMongo(), disconnectRedis()]);
+      // closeSupportMcp: stop the chatbot's MCP server (a child process), if one was started
+      await Promise.all([disconnectMongo(), disconnectRedis(), closeSupportMcp()]);
       process.exit(0);
     });
     setTimeout(() => process.exit(1), 10_000).unref(); // give up after 10 s

@@ -20,10 +20,11 @@ export interface RequestOptions {
   token?: string | null;
   signal?: AbortSignal; // lets a page cancel a request it no longer needs
   headers?: Record<string, string>;
+  timeoutMs?: number; // for the few endpoints that are slow by nature (the support chat waits on an LLM)
 }
 
-export async function request<T>(path: string, { method = "GET", body, token, signal, headers }: RequestOptions = {}): Promise<T> {
-  const timeout = AbortSignal.timeout(TIMEOUT_MS);
+export async function request<T>(path: string, { method = "GET", body, token, signal, headers, timeoutMs = TIMEOUT_MS }: RequestOptions = {}): Promise<T> {
+  const timeout = AbortSignal.timeout(timeoutMs);
   let res: Response;
   try {
     res = await fetch(`/api/v1${path}`, {
