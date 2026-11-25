@@ -128,16 +128,23 @@ export async function runChat({ llm, mcp, model, userId, history, signal }) {
 let openai = null;
 const llmClient = () => (openai ??= new OpenAI({ apiKey: env.OPENAI_API_KEY, timeout: 20_000, maxRetries: 1 }));
 
-/** Answer one customer message. Turns every failure into an HttpError with a safe message. */
+/**
+ * Answer one customer message. Turns every failure into an HttpError with a safe message.
+ *
+ * Status codes: never 502 or 503 here. Nginx reads those as "this API process is broken"
+ * (proxy_next_upstream + max_fails in deploy/nginx-scale_cart.conf) and stops sending it
+ * traffic for 10 s. When OpenAI is down, this process is still healthy: the chat must fail
+ * alone, without taking product pages and checkout down with it.
+ */
 export async function answerCustomer({ userId, history }) {
-  if (!env.OPENAI_API_KEY) throw new HttpError(503, "CHAT_DISABLED", "The support chat is not set up yet. Please use the contact page.");
+  if (!env.OPENAI_API_KEY) throw new HttpError(501, "CHAT_DISABLED", "The support chat is not set up yet. Please use the contact page.");
 
   let mcp;
   try {
     mcp = await supportMcp();
   } catch (err) {
     console.error("[chat] MCP server unavailable:", err?.message);
-    throw new HttpError(503, "CHAT_UNAVAILABLE", "The support chat is unavailable right now. Please try again in a moment.");
+    throw new HttpError(500, "CHAT_UNAVAILABLE", "The support chat is unavailable right now. Please try again in a moment.");
   }
 
   const signal = AbortSignal.timeout(DEADLINE_MS);
@@ -146,10 +153,10 @@ export async function answerCustomer({ userId, history }) {
   } catch (err) {
     if (signal.aborted) throw new HttpError(504, "CHAT_TIMEOUT", "That took too long. Please try again.");
     if (err instanceof OpenAI.RateLimitError) {
-      throw new HttpError(503, "CHAT_BUSY", "The support chat is busy right now. Please try again in a moment.");
+      throw new HttpError(500, "CHAT_BUSY", "The support chat is busy right now. Please try again in a moment.");
     }
     // Wrong key, unknown model, OpenAI outage, network: log the detail, show a generic message
     console.error("[chat] LLM call failed:", err instanceof OpenAI.APIError ? `${err.status} ${err.message}` : err);
-    throw new HttpError(502, "CHAT_UNAVAILABLE", "The support chat is unavailable right now. Please try again in a moment.");
+    throw new HttpError(500, "CHAT_UNAVAILABLE", "The support chat is unavailable right now. Please try again in a moment.");
   }
 }
